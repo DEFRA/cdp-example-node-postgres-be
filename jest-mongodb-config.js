@@ -5,7 +5,7 @@ export default {
     },
     autoStart: false,
     instance: {
-      dbName: 'cdp-node-backend-template'
+      dbName: 'cdp-example-node-postgres-be'
     }
   },
   mongoURLEnvName: 'MONGO_URI',
