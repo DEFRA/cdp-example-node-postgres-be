@@ -2,10 +2,10 @@ import { config } from '~/src/config/index.js'
 
 import knex from 'knex'
 import { newDb } from 'pg-mem'
+import { MigrationSource } from '~/src/api/common/helpers/mygration.js'
 
 const migrations = {
-  directory: 'knex/migrations',
-  loadExtensions: ['.cjs']
+  migrationSource: new MigrationSource()
 }
 
 /**

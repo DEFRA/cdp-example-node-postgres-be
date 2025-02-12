@@ -10,7 +10,7 @@ import { secureContext } from '~/src/api/common/helpers/secure-context/index.js'
 import { pulse } from '~/src/api/common/helpers/pulse.js'
 import { requestTracing } from '~/src/api/common/helpers/request-tracing.js'
 import { setupProxy } from '~/src/api/common/helpers/proxy/setup-proxy.js'
-import * as fs from 'node:fs'
+import { MigrationSource } from '~/src/api/common/helpers/mygration.js'
 
 async function createServer() {
   setupProxy()
@@ -42,7 +42,9 @@ async function createServer() {
     }
   })
 
-  await postgres.migrate.latest()
+  await postgres.migrate.latest({
+    migrationSource: new MigrationSource()
+  })
 
   server.decorate('request', 'db', postgres)
   server.decorate('server', 'db', postgres)
