@@ -1,20 +1,29 @@
 import Boom from '@hapi/boom'
 import isNull from 'lodash/isNull.js'
-
-import { findExampleData } from '~/src/api/example/helpers/find-example-data.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import { createExampleData } from '~/src/api/example/helpers/create-example-data.js'
+import Joi from 'joi'
 
 /**
  * @satisfies {Partial<ServerRoute>}
  */
-const exampleFindOneController = {
+const exampleCreateOneController = {
+  options: {
+    validate: {
+      payload: Joi.object({
+        name: Joi.string().min(3).max(32).required(),
+        type: Joi.number().required()
+      })
+    }
+  },
   /**
    * @param { Request } request
    * @param { ResponseToolkit } h
    * @returns { Promise<*> }
    */
   handler: async (request, h) => {
-    const entity = await findExampleData(request.db, request.params.exampleId)
+    const { name, type } = request.payload
+    const entity = await createExampleData(request.db, name, type)
     if (isNull(entity)) {
       return Boom.boomify(Boom.notFound())
     }
@@ -23,7 +32,7 @@ const exampleFindOneController = {
   }
 }
 
-export { exampleFindOneController }
+export { exampleCreateOneController }
 
 /**
  * @import { Request, ResponseToolkit, ServerRoute} from '@hapi/hapi'

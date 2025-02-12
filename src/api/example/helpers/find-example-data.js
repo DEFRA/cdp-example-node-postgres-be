@@ -1,18 +1,11 @@
 /**
- * Finds and returns a single example record from mongodb.
- * See src/server/api/common/helpers/mongodb.js for an example of how the indexes are created for this collection.
- * @param { Db } db
+ * Finds and returns a single example record from postgres.
+ * @param { Knex } db
  * @param { string } id
- * @returns {Promise<WithId<Document> | null>}
+ * @returns
  */
 function findExampleData(db, id) {
-  return db
-    .collection('example-data')
-    .findOne({ exampleId: id }, { projection: { _id: 0 } })
+  return db('example').select('*').where('id', id)
 }
 
 export { findExampleData }
-
-/**
- * @import { Db, WithId, Document } from 'mongodb'
- */

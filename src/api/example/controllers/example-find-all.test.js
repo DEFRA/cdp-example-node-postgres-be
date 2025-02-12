@@ -11,17 +11,18 @@ describe('#exampleFindAllController', () => {
   })
 
   beforeEach(async () => {
-    await server.db.collection('example-data').insertMany([
-      { exampleId: 'four', exampleData: 'data' },
-      { exampleId: 'five', exampleData: 'data' }
+    await server.db('example').insert([
+      { name: 'four', type: 123.45 },
+      { name: 'five', type: 999.99 }
     ])
   })
 
   afterEach(async () => {
-    await server.db.collection('example-data').deleteMany({})
+    await server.db('example').delete({})
   })
 
   afterAll(async () => {
+    await server.db.destroy()
     await server.stop({ timeout: 0 })
   })
 
@@ -34,8 +35,8 @@ describe('#exampleFindAllController', () => {
     expect(result).toEqual({
       message: 'success',
       entities: [
-        { exampleId: 'four', exampleData: 'data' },
-        { exampleId: 'five', exampleData: 'data' }
+        { id: 2, name: 'four', type: 123.45 },
+        { id: 23, name: 'five', type: 999.99 }
       ]
     })
     expect(statusCode).toBe(statusCodes.ok)

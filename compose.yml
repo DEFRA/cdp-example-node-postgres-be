@@ -31,14 +31,16 @@ services:
     networks:
       - cdp-tenant
 
-  mongodb:
-    image: mongo:6.0.13
+  postgres:
+    image: postgres:14.15-alpine3.20
+    environment:
+      POSTGRES_PASSWORD: password
     networks:
       - cdp-tenant
     ports:
-      - '27017:27017'
+      - '5432:5432'
     volumes:
-      - mongodb-data:/data
+      - postgres-data:/data
     restart: always
 
   ################################################################################
@@ -72,11 +74,11 @@ services:
       - '3555:3555'
     links:
       - 'localstack:localstack'
-      - 'mongodb:mongodb'
+      - 'postgres:postgres'
     depends_on:
       localstack:
         condition: service_healthy
-      mongodb:
+      postgres:
         condition: service_started
     env_file:
       - 'compose/aws.env'
@@ -84,14 +86,14 @@ services:
       PORT: 3555
       NODE_ENV: development
       LOCALSTACK_ENDPOINT: http://localstack:4566
-      MONGO_URI: mongodb://mongodb:27017/
+      POSTGRES_URI: http://postgres:5432
     networks:
       - cdp-tenant
 
 ################################################################################
 
 volumes:
-  mongodb-data:
+  postgres-data:
 
 networks:
   cdp-tenant:

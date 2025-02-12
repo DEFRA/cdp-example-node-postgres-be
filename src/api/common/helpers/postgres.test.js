@@ -1,9 +1,7 @@
-import { Db, MongoClient } from 'mongodb'
-import { LockManager } from 'mongo-locks'
-
 import { createServer } from '~/src/api/index.js'
+import { postgres } from '~/src/api/common/helpers/postgres.js'
 
-describe('#mongoDb', () => {
+describe('#postgres', () => {
   /** @type {Server} */
   let server
 
@@ -11,16 +9,22 @@ describe('#mongoDb', () => {
     beforeAll(async () => {
       server = await createServer()
       await server.initialize()
+
+      postgres.migrate.up()
+
+      await postgres.schema.createTable('example', (table) => {
+        table.increments('id')
+        table.string('name')
+        table.string('value')
+      })
     })
 
     afterAll(async () => {
-      await server.stop({ timeout: 0 })
+      await server.db.stop({ timeout: 0 })
     })
 
-    test('Server should have expected MongoDb decorators', () => {
-      expect(server.db).toBeInstanceOf(Db)
-      expect(server.mongoClient).toBeInstanceOf(MongoClient)
-      expect(server.locker).toBeInstanceOf(LockManager)
+    test('Server should have expected Postgres decorators', () => {
+      expect(server.db).toBeInstanceOf(postgres)
     })
 
     test('MongoDb should have expected database name', () => {

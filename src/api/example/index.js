@@ -2,6 +2,7 @@ import {
   exampleFindOneController,
   exampleFindAllController
 } from '~/src/api/example/controllers/index.js'
+import { exampleCreateOneController } from '~/src/api/example/controllers/example-create-one.js'
 
 /**
  * @satisfies {ServerRegisterPluginObject<void>}
@@ -20,6 +21,11 @@ const example = {
           method: 'GET',
           path: '/example/{exampleId}',
           ...exampleFindOneController
+        },
+        {
+          method: 'POST',
+          path: '/example',
+          ...exampleCreateOneController
         }
       ])
     }
