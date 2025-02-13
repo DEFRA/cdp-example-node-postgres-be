@@ -16,25 +16,24 @@ describe('#exampleFindAllController', () => {
 
   describe('With results', () => {
     beforeEach(async () => {
-      await server.db
-        .collection('example-data')
-        .insertOne({ exampleId: 'one', exampleData: 'data' })
+      await server.db('example').insert([{ name: 'six', type: 665.43 }])
     })
 
     afterEach(async () => {
-      await server.db.collection('example-data').deleteMany({})
+      await server.db('example').delete({})
     })
 
     test('Should provide expected response', async () => {
       const { result, statusCode } = await server.inject({
         method: 'GET',
-        url: '/example/one'
+        url: '/example/1'
       })
 
       expect(result).toEqual({
         entity: {
-          exampleData: 'data',
-          exampleId: 'one'
+          id: 1,
+          name: 'six',
+          type: 665.43
         },
         message: 'success'
       })
@@ -45,7 +44,7 @@ describe('#exampleFindAllController', () => {
   test('Should provide expected 404 response', async () => {
     const { result, statusCode } = await server.inject({
       method: 'GET',
-      url: '/example/one'
+      url: '/example/99'
     })
 
     expect(result).toEqual({
