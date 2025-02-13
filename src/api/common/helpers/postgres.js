@@ -1,17 +1,31 @@
-import { config } from '~/src/config/index.js'
-
 import knex from 'knex'
 import { newDb } from 'pg-mem'
+import { fileURLToPath } from 'node:url'
+import path from 'node:path'
+
+import { config } from '~/src/config/index.js'
 
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
  */
+
+const dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const migrationsPath = path.resolve(
+  dirname,
+  '..',
+  '..',
+  '..',
+  'knex',
+  'migrations'
+)
+
 export const postgres =
   process.env.NODE_ENV === 'test'
     ? newDb().adapters.createKnex(0, {
         client: 'pg',
         migrations: {
-          directory: 'src/knex/migrations',
+          directory: migrationsPath,
           loadExtensions: ['.cjs']
         }
       })
@@ -28,7 +42,7 @@ export const postgres =
             : false
         },
         migrations: {
-          directory: 'knex/migrations',
+          directory: migrationsPath,
           loadExtensions: ['.cjs']
         }
       })
