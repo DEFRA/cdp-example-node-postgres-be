@@ -4,7 +4,7 @@ import knex from 'knex'
 import { newDb } from 'pg-mem'
 
 const migrations = {
-  directory: 'knex/migrations',
+  directory: 'src/knex/migrations',
   loadExtensions: ['.cjs']
 }
 
