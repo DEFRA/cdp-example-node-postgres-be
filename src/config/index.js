@@ -79,17 +79,43 @@ const config = convict({
         : ['req', 'res', 'responseTime']
     }
   },
-  mongoUri: {
-    doc: 'URI for mongodb',
-    format: String,
-    default: 'mongodb://127.0.0.1:27017/',
-    env: 'MONGO_URI'
-  },
-  mongoDatabase: {
-    doc: 'database for mongodb',
-    format: String,
-    default: 'cdp-example-node-postgres-be',
-    env: 'MONGO_DATABASE'
+  postgres: {
+    host: {
+      doc: 'host for postgres',
+      format: String,
+      default: 'localhost',
+      env: 'DB_HOST'
+    },
+    port: {
+      doc: 'port for postgres',
+      format: String,
+      default: '5432',
+      env: 'DB_PORT'
+    },
+    database: {
+      doc: 'database for postgres',
+      format: String,
+      default: 'postgres',
+      env: 'DB_DATABASE'
+    },
+    user: {
+      doc: 'user for postgres',
+      format: String,
+      default: 'postgres',
+      env: 'DB_USER'
+    },
+    password: {
+      doc: 'password for postgres',
+      format: String,
+      default: 'password',
+      env: 'DB_PASSWORD'
+    },
+    ssl: {
+      doc: 'ssl for postgres',
+      format: Boolean,
+      default: false,
+      env: 'DB_SSL'
+    }
   },
   httpProxy: {
     doc: 'HTTP Proxy',

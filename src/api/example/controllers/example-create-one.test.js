@@ -1,7 +1,7 @@
 import { createServer } from '~/src/api/index.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
 
-describe('#exampleFindAllController', () => {
+describe('#exampleCreateOneController', () => {
   /** @type {Server} */
   let server
 
@@ -19,22 +19,18 @@ describe('#exampleFindAllController', () => {
   })
 
   test('Should provide expected response', async () => {
-    await server.db('example').insert([
-      { name: 'four', type: 123.45 },
-      { name: 'five', type: 999.99 }
-    ])
-
     const { result, statusCode } = await server.inject({
-      method: 'GET',
-      url: '/example'
+      method: 'POST',
+      url: '/example',
+      payload: {
+        name: 'sample',
+        type: 100.99
+      }
     })
 
     expect(result).toEqual({
       message: 'success',
-      entities: [
-        { id: 1, name: 'four', type: 123.45 },
-        { id: 2, name: 'five', type: 999.99 }
-      ]
+      entity: [{ id: 1 }]
     })
     expect(statusCode).toBe(statusCodes.ok)
   })
