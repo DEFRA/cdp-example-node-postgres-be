@@ -3,11 +3,6 @@ import { config } from '~/src/config/index.js'
 import knex from 'knex'
 import { newDb } from 'pg-mem'
 
-const migrations = {
-  directory: 'src/knex/migrations',
-  loadExtensions: ['.cjs']
-}
-
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
  */
@@ -15,7 +10,10 @@ export const postgres =
   process.env.NODE_ENV === 'test'
     ? newDb().adapters.createKnex(0, {
         client: 'pg',
-        migrations
+        migrations: {
+          directory: 'src/knex/migrations',
+          loadExtensions: ['.cjs']
+        }
       })
     : knex({
         client: 'pg',
@@ -29,7 +27,10 @@ export const postgres =
             ? { rejectUnauthorized: false }
             : false
         },
-        migrations
+        migrations: {
+          directory: 'knex/migrations',
+          loadExtensions: ['.cjs']
+        }
       })
 
 /**
