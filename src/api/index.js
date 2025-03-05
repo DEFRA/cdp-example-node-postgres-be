@@ -41,26 +41,18 @@ async function createServer() {
     }
   })
 
-  await postgres.migrate.latest()
-
-  server.decorate('request', 'db', postgres)
-  server.decorate('server', 'db', postgres)
-
-  server.events.on('stop', () => {
-    server.logger.info('Closing Postgres')
-    postgres.destroy()
-  })
-
   // Hapi Plugins:
   // requestLogger  - automatically logs incoming requests
   // requestTracing - trace header logging and propagation
   // secureContext  - loads CA certificates from environment config
+  // postgres       - postgres client for connecting to a postgres database
   // pulse          - provides shutdown handlers
   // router         - routes used in the app
   await server.register([
     requestLogger,
     requestTracing,
     secureContext,
+    postgres,
     pulse,
     router
   ])

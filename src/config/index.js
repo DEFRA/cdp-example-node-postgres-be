@@ -88,8 +88,8 @@ const config = convict({
     },
     port: {
       doc: 'port for postgres',
-      format: String,
-      default: '5432',
+      format: 'port',
+      default: 5432,
       env: 'DB_PORT'
     },
     database: {
@@ -103,12 +103,6 @@ const config = convict({
       format: String,
       default: 'postgres',
       env: 'DB_USER'
-    },
-    password: {
-      doc: 'password for postgres',
-      format: String,
-      default: 'password',
-      env: 'DB_PASSWORD'
     },
     ssl: {
       doc: 'ssl for postgres',
