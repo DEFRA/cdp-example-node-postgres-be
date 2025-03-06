@@ -39,10 +39,12 @@ export const postgres = {
     register: function (server, options) {
       server.logger.info('Setting up Postgres')
 
-      const db = async () =>
-        new Client({
+      const db = async () => {
+        const token = await getToken(options)
+        server.logger.info(token)
+        return new Client({
           user: options.postgres.user,
-          password: await getToken(options),
+          password: token,
           host: options.postgres.host,
           port: options.postgres.port,
           database: options.postgres.database,
@@ -53,6 +55,7 @@ export const postgres = {
             }
           })
         })
+      }
 
       server.logger.info(
         `Postgres connected to database '${options.postgres.database}'`
@@ -64,7 +67,7 @@ export const postgres = {
   },
   options: {
     postgres: config.get('postgres'),
-    region: 'eu-west-2',
+    region: config.get('awsRegion'),
     isDevelopment: config.get('isDevelopment')
   }
 }

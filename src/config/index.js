@@ -37,6 +37,12 @@ const config = convict({
     format: String,
     default: path.resolve(dirname, '../..')
   },
+  awsRegion: {
+    doc: 'AWS region',
+    format: String,
+    default: 'eu-west-2',
+    env: 'AWS_REGION'
+  },
   isProduction: {
     doc: 'If this application running in the production environment',
     format: Boolean,
@@ -103,12 +109,6 @@ const config = convict({
       format: String,
       default: 'postgres',
       env: 'DB_USER'
-    },
-    ssl: {
-      doc: 'ssl for postgres',
-      format: Boolean,
-      default: false,
-      env: 'DB_SSL'
     }
   },
   httpProxy: {
