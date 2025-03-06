@@ -109,6 +109,12 @@ const config = convict({
       format: String,
       default: 'postgres',
       env: 'DB_USER'
+    },
+    iamAuthentication: {
+      doc: 'enable iam authentication for postgres',
+      format: Boolean,
+      default: isProduction,
+      env: 'DB_IAM_AUTHENTICATION'
     }
   },
   httpProxy: {

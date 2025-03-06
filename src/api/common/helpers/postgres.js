@@ -7,8 +7,7 @@ const { Client } = pg
 
 async function getToken(options) {
   let token
-
-  if (options.isProduction) {
+  if (options.postgres.iamAuthentication) {
     const signer = new Signer({
       hostname: options.postgres.host,
       port: options.postgres.port,
@@ -39,12 +38,10 @@ export const postgres = {
     register: function (server, options) {
       server.logger.info('Setting up Postgres')
 
-      const db = async () => {
-        const token = await getToken(options)
-        server.logger.info(token)
-        return new Client({
+      const db = async () =>
+        new Client({
           user: options.postgres.user,
-          password: token,
+          password: await getToken(options),
           host: options.postgres.host,
           port: options.postgres.port,
           database: options.postgres.database,
@@ -55,7 +52,6 @@ export const postgres = {
             }
           })
         })
-      }
 
       server.logger.info(
         `Postgres connected to database '${options.postgres.database}'`
@@ -67,8 +63,7 @@ export const postgres = {
   },
   options: {
     postgres: config.get('postgres'),
-    region: config.get('awsRegion'),
-    isDevelopment: config.get('isDevelopment')
+    region: config.get('awsRegion')
   }
 }
 
