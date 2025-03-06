@@ -4,6 +4,25 @@ import { Signer } from '@aws-sdk/rds-signer'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
 
 const { Client } = pg
+
+async function getToken(options) {
+  let token
+
+  if (options.isProduction) {
+    const signer = new Signer({
+      hostname: options.postgres.host,
+      port: options.postgres.port,
+      username: options.postgres.user,
+      credentials: fromNodeProviderChain(),
+      region: options.region
+    })
+    token = await signer.getAuthToken()
+  } else {
+    token = 'admin'
+  }
+  return token
+}
+
 /**
  * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
  */
@@ -17,31 +36,22 @@ export const postgres = {
      * @param { postgres: object, region: string, isDevelopment: boolean } options
      * @returns {Promise<void>}
      */
-    register: async function (server, options) {
+    register: function (server, options) {
       server.logger.info('Setting up Postgres')
 
-      let token
-
-      if (options.isProduction) {
-        const signer = new Signer({
-          hostname: options.postgres.host,
-          port: options.postgres.port,
-          username: options.postgres.user,
-          credentials: fromNodeProviderChain(),
-          region: options.region
-        })
-        token = await signer.getAuthToken()
-      } else {
-        token = 'admin'
-      }
-
-      const db = () =>
+      const db = async () =>
         new Client({
           user: options.postgres.user,
-          password: token,
+          password: await getToken(options),
           host: options.postgres.host,
           port: options.postgres.port,
-          database: options.postgres.database
+          database: options.postgres.database,
+          ...(server.secureContext && {
+            ssl: {
+              rejectUnauthorized: false,
+              secureContext: server.secureContext
+            }
+          })
         })
 
       server.logger.info(
