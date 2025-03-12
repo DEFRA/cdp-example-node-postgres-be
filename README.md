@@ -33,6 +33,7 @@ easier to use the Node Version Manager [nvm](https://github.com/creationix/nvm)
 
 To use the correct version of Node.js for this application, via nvm:
 
+
 ```bash
 cd cdp-example-node-postgres-be
 nvm use
