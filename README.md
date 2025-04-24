@@ -96,7 +96,7 @@ ncu --interactive --format group
 
 #### Windows prettier issue
 
-If you are having issues with formatting of line breaks on Windows update your global git config by running:
+If you are having issues with formatting of line breaks on Windows update your global git config by running: 
 
 ```bash
 git config --global core.autocrlf false
