@@ -4,7 +4,7 @@
     <tagDatabase tag="v1.0.2" />
   </changeSet>
   <changeSet author="VMuthu" id="2">
-    <modifyDataType tableName="payment_activity_data" columnName="payee_name" newDataType="VARCHAR(128)" />
-    <modifyDataType tableName="payment_activity_data" columnName="activity_level" newDataType="VARCHAR(64)" />
+    <modifyDataType tableName="payment_activity_data" columnName="town" newDataType="VARCHAR(128)" />
+    <modifyDataType tableName="payment_activity_data" columnName="parliamentary_constituency" newDataType="VARCHAR(64)" />
   </changeSet>
 </databaseChangeLog>
