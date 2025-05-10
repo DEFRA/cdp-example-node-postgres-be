@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build and Publish
-        uses: DEFRA/cdp-build-action/publish-db-migrations@CORE-587
+        uses: DEFRA/cdp-build-action/publish-db-migrations@migration-metadata
         with:
           path: ./changelog
           force: "true"
