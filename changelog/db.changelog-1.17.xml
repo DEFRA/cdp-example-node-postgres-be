@@ -10,4 +10,5 @@
     <dropTable tableName="dim_payee" />
     <dropTable tableName="dim_scheme" />
   </changeSet>
+
 </databaseChangeLog>
