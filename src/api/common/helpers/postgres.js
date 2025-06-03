@@ -1,13 +1,15 @@
 import { config } from '~/src/config/index.js'
-import pg from 'pg'
+import Pool from 'pg-pool'
 import { Signer } from '@aws-sdk/rds-signer'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
+import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
 
-const { Client } = pg
+const logger = createLogger()
 
 async function getToken(options) {
   let token
   if (options.postgres.iamAuthentication) {
+    logger.info('requesting new IAM RDS token')
     const signer = new Signer({
       hostname: options.postgres.host,
       port: options.postgres.port,
@@ -17,7 +19,7 @@ async function getToken(options) {
     })
     token = await signer.getAuthToken()
   } else {
-    token = 'admin'
+    token = 'mypassword'
   }
   return token
 }
@@ -32,33 +34,32 @@ export const postgres = {
     /**
      *
      * @param { import('@hapi/hapi').Server } server
-     * @param { postgres: object, region: string, isDevelopment: boolean } options
-     * @returns {Promise<void>}
+     * @param {{ postgres: {host: string, port: number, user: string, database: string}, region: string, isDevelopment: boolean }} options
      */
     register: function (server, options) {
       server.logger.info('Setting up Postgres')
 
-      const db = async () =>
-        new Client({
-          user: options.postgres.user,
-          password: await getToken(options),
-          host: options.postgres.host,
-          port: options.postgres.port,
-          database: options.postgres.database,
-          ...(server.secureContext && {
-            ssl: {
-              rejectUnauthorized: false,
-              secureContext: server.secureContext
-            }
-          })
+      const pool = new Pool({
+        user: options.postgres.user,
+        password: async () => await getToken(options),
+        host: options.postgres.host,
+        port: options.postgres.port,
+        database: options.postgres.database,
+        maxLifetimeSeconds: 10,
+        ...(server.secureContext && {
+          ssl: {
+            rejectUnauthorized: false,
+            secureContext: server.secureContext
+          }
         })
+      })
 
       server.logger.info(
         `Postgres connected to database '${options.postgres.database}'`
       )
 
-      server.decorate('server', 'db', db)
-      server.decorate('request', 'db', db)
+      server.decorate('server', 'db', pool)
+      server.decorate('request', 'db', pool)
     }
   },
   options: {

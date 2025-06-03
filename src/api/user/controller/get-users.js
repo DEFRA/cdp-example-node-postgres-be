@@ -10,7 +10,7 @@ const getUsersController = {
    * @returns { Promise<*> }
    */
   handler: async (request, h) => {
-    const entity = await findAllUsers(await request.db())
+    const entity = await findAllUsers(request.db)
     if (isNull(entity)) {
       return Boom.boomify(Boom.notFound())
     }
