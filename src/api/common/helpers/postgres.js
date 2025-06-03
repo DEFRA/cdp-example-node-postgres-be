@@ -6,22 +6,26 @@ import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
 
 const logger = createLogger()
 
-async function getToken(options) {
-  let token
+/**
+ * Returns a function that provides a postgres login.
+ * If iamAuthentication
+ */
+function createPasswordProvider(options) {
   if (options.postgres.iamAuthentication) {
-    logger.info('requesting new IAM RDS token')
-    const signer = new Signer({
-      hostname: options.postgres.host,
-      port: options.postgres.port,
-      username: options.postgres.user,
-      credentials: fromNodeProviderChain(),
-      region: options.region
-    })
-    token = await signer.getAuthToken()
-  } else {
-    token = 'mypassword'
+    return async () => {
+      logger.info('requesting new IAM RDS token')
+      const signer = new Signer({
+        hostname: options.postgres.host,
+        port: options.postgres.port,
+        username: options.postgres.user,
+        credentials: fromNodeProviderChain(),
+        region: options.region
+      })
+      return await signer.getAuthToken()
+    }
   }
-  return token
+
+  return () => options.postgres.localPassword
 }
 
 /**
@@ -39,13 +43,14 @@ export const postgres = {
     register: function (server, options) {
       server.logger.info('Setting up Postgres')
 
+      const passwordProvider = createPasswordProvider(options)
       const pool = new Pool({
         user: options.postgres.user,
-        password: async () => await getToken(options),
+        password: passwordProvider,
         host: options.postgres.host,
         port: options.postgres.port,
         database: options.postgres.database,
-        maxLifetimeSeconds: 10,
+        maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
         ...(server.secureContext && {
           ssl: {
             rejectUnauthorized: false,

@@ -115,6 +115,12 @@ const config = convict({
       format: Boolean,
       default: isProduction,
       env: 'DB_IAM_AUTHENTICATION'
+    },
+    localPassword: {
+      doc: 'password for local development. used when iamAuthentication is not enabled',
+      format: String,
+      default: 'admin',
+      env: 'DB_LOCAL_PASSWORD'
     }
   },
   httpProxy: {

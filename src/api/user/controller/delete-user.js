@@ -10,7 +10,7 @@ const deleteUserController = {
    * @returns { Promise<*> }
    */
   handler: async (request, h) => {
-    const entity = await removeUser(request.params.userId, await request.db())
+    const entity = await removeUser(request.params.userId, request.db)
     if (isNull(entity)) {
       return Boom.boomify(Boom.notFound())
     }

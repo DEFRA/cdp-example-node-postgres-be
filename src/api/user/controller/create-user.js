@@ -21,12 +21,7 @@ const createUserController = {
    */
   handler: async (request, h) => {
     const { firstName, lastName, age } = request.payload
-    const entity = await createUser(
-      firstName,
-      lastName,
-      age,
-      await request.db()
-    )
+    const entity = await createUser(firstName, lastName, age, request.db)
     if (isNull(entity)) {
       return Boom.boomify(Boom.notFound())
     }
