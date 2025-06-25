@@ -1,12 +1,28 @@
-import { createServer } from '~/src/api/index.js'
 import { statusCodes } from '~/src/api/common/constants/status-codes.js'
+import hapi from '@hapi/hapi'
+import { failAction } from '~/src/api/common/helpers/fail-action.js'
+import { health } from '~/src/api/health/index.js'
 
 describe('#healthController', () => {
   /** @type {Server} */
   let server
 
   beforeAll(async () => {
-    server = await createServer()
+    server = hapi.server({
+      port: 15345,
+      routes: {
+        validate: {
+          options: {
+            abortEarly: false
+          },
+          failAction
+        }
+      },
+      router: {
+        stripTrailingSlash: true
+      }
+    })
+    await server.register(health)
     await server.initialize()
   })
 

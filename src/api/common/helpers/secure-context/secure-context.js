@@ -1,7 +1,6 @@
 import tls from 'node:tls'
-import { config } from '~/src/config/index.js'
-
 import { getTrustStoreCerts } from '~/src/api/common/helpers/secure-context/get-trust-store-certs.js'
+import { config } from '~/src/config/index.js'
 
 /**
  * Creates a new secure context loaded from Base64 encoded certs
@@ -11,29 +10,35 @@ export const secureContext = {
   plugin: {
     name: 'secure-context',
     register(server) {
-      if (config.get('isSecureContextEnabled')) {
+      const trustStoreCerts = getTrustStoreCerts(process.env)
+      if (!config.get('isSecureContextEnabled')) return
+      if (trustStoreCerts?.length > 0) {
         const originalTlsCreateSecureContext = tls.createSecureContext
-
         tls.createSecureContext = function (options = {}) {
-          const trustStoreCerts = getTrustStoreCerts(process.env)
+          server.logger.info(
+            `Found ${trustStoreCerts.length} TRUSTSTORE_ certificates to install`
+          )
 
-          if (!trustStoreCerts.length) {
-            server.logger.info('Could not find any TRUSTSTORE_ certificates')
-          }
+          const mergedCa = [
+            ...(Array.isArray(options.ca)
+              ? options.ca
+              : options.ca
+                ? [options.ca]
+                : []),
+            ...trustStoreCerts
+          ]
 
-          const tlsSecureContext = originalTlsCreateSecureContext(options)
+          const newOptions = { ...options, ca: mergedCa }
 
-          trustStoreCerts.forEach((cert) => {
-            tlsSecureContext.context.addCACert(cert)
-          })
-
-          return tlsSecureContext
+          return originalTlsCreateSecureContext(newOptions)
         }
-
-        server.decorate('server', 'secureContext', tls.createSecureContext())
       } else {
-        server.logger.info('Custom secure context is disabled')
+        server.logger.warn(
+          'No TRUSTSTORE_ certificates were found, using default secure context'
+        )
       }
+
+      server.decorate('server', 'secureContext', tls.createSecureContext())
     }
   }
 }

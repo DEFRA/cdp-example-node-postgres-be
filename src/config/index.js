@@ -94,7 +94,7 @@ const config = convict({
     },
     port: {
       doc: 'port for postgres',
-      format: 'port',
+      format: Number,
       default: 5432,
       env: 'DB_PORT'
     },
@@ -110,7 +110,13 @@ const config = convict({
       default: 'postgres',
       env: 'DB_USER'
     },
-    iamAuthentication: {
+    ssl: {
+      doc: 'connect using SSL',
+      format: Boolean,
+      default: isProduction,
+      env: 'DB_SSL'
+    },
+    useIAM: {
       doc: 'enable iam authentication for postgres',
       format: Boolean,
       default: isProduction,
@@ -119,7 +125,7 @@ const config = convict({
     localPassword: {
       doc: 'password for local development. used when iamAuthentication is not enabled',
       format: String,
-      default: 'admin',
+      default: '',
       env: 'DB_LOCAL_PASSWORD'
     }
   },
