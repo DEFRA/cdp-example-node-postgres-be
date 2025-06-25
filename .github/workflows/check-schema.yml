@@ -36,12 +36,11 @@ jobs:
 
       - name: Install Liquibase
         run: |
-          curl -sL "https://github.com/liquibase/liquibase/releases/download/v${LIQUIBASE_VERSION}/liquibase-${LIQUIBASE_VERSION}.tar.gz" | tar xz
-          sudo mv liquibase /usr/local/bin/liquibase
+          curl -sL "https://github.com/liquibase/liquibase/releases/download/v${LIQUIBASE_VERSION}/liquibase-${LIQUIBASE_VERSION}.tar.gz" | tar xz -C ./liquibase
 
       - name: Validate Liquibase changelog
         run: |
-           liquibase \
+           ./liquibase/liquibase \
            --changeLogFile=${LIQUIBASE_CHANGELOG_PATH} \
            validate
 
