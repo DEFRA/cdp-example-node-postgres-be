@@ -1,6 +1,6 @@
 import tls from 'node:tls'
-
 import { getTrustStoreCerts } from '~/src/api/common/helpers/secure-context/get-trust-store-certs.js'
+import { config } from '~/src/config/index.js'
 
 /**
  * Creates a new secure context loaded from Base64 encoded certs
@@ -11,7 +11,7 @@ export const secureContext = {
     name: 'secure-context',
     register(server) {
       const trustStoreCerts = getTrustStoreCerts(process.env)
-
+      if (!config.get('isSecureContextEnabled')) return
       if (trustStoreCerts?.length > 0) {
         const originalTlsCreateSecureContext = tls.createSecureContext
         tls.createSecureContext = function (options = {}) {
