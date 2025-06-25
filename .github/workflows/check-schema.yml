@@ -50,7 +50,7 @@ jobs:
 
       - name: Run Liquibase update
         run: |
-          liquibase \
+          ./liquibase/liquibase \
             --changeLogFile=${LIQUIBASE_CHANGELOG_PATH} \
             --url=jdbc:postgresql://localhost:5432/${POSTGRES_DB} \
             --username=${POSTGRES_USER} \
