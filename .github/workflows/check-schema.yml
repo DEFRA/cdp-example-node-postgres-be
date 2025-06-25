@@ -5,7 +5,6 @@ on:
 
 env:
   LIQUIBASE_VERSION: 4.27.0
-  POSTGRES_VERSION: 15
 
   POSTGRES_USER: liquibase
   POSTGRES_PASSWORD: liquibase
@@ -18,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     services:
       postgres:
-        image: postgres:${{ env.POSTGRES_VERSION }}
+        image: postgres:15
         env:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
