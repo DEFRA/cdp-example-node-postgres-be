@@ -52,10 +52,17 @@ async function createServer() {
     requestLogger,
     requestTracing,
     secureContext,
-    postgres,
     pulse,
     router
   ])
+
+  await server.register({
+    plugin: postgres.plugin,
+    options: {
+      ...config.get('postgres'),
+      region: config.get('awsRegion')
+    }
+  })
 
   return server
 }

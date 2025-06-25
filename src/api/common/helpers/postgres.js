@@ -1,23 +1,21 @@
-import { config } from '~/src/config/index.js'
 import Pool from 'pg-pool'
 import { Signer } from '@aws-sdk/rds-signer'
 import { fromNodeProviderChain } from '@aws-sdk/credential-providers'
-import { createLogger } from '~/src/api/common/helpers/logging/logger.js'
-
-const logger = createLogger()
+import Joi from 'joi'
 
 /**
- * Returns a function that provides a postgres login.
- * If iamAuthentication
+ * Creates a function that takes a set of options and returns a function that provides a Postgres password.
+ * If useIAM is set to true then it will attempt to get a token from the AWS RDS API.
+ * If it's not set then it returns the value set in localPassword, allowing for local development.
+ * @param {{ host: string, port: number, user: string, region: string, useIAM: boolean, localPassword: string|null }} options
  */
 function createPasswordProvider(options) {
-  if (options.postgres.iamAuthentication) {
+  if (options.useIAM) {
     return async () => {
-      logger.info('requesting new IAM RDS token')
       const signer = new Signer({
-        hostname: options.postgres.host,
-        port: options.postgres.port,
-        username: options.postgres.user,
+        hostname: options.host,
+        port: options.port,
+        username: options.user,
         credentials: fromNodeProviderChain(),
         region: options.region
       })
@@ -25,56 +23,76 @@ function createPasswordProvider(options) {
     }
   }
 
-  return () => options.postgres.localPassword
+  return () => options.localPassword
 }
 
-/**
- * @satisfies { import('@hapi/hapi').ServerRegisterPluginObject<*> }
- */
 export const postgres = {
   plugin: {
     name: 'postgres',
-    version: '1.0.0',
+    version: '0.0.0',
     /**
      *
      * @param { import('@hapi/hapi').Server } server
-     * @param {{ postgres: {host: string, port: number, user: string, database: string}, region: string, isDevelopment: boolean }} options
+     * @param {{ host: string, port: number, user: string, database: string, region: string, useIAM: boolean, localPassword: string|null, ssl: boolean|null }} options
      */
-    register: function (server, options) {
-      server.logger.info('Setting up Postgres')
+    register: async function (server, options) {
+      const { value, error } = optionsSchema.validate(options)
+      if (error) {
+        throw new Error(error)
+      }
+      const passwordProvider = createPasswordProvider(value)
 
-      const passwordProvider = createPasswordProvider(options)
-      const pool = new Pool({
-        user: options.postgres.user,
+      const poolConfig = {
+        user: value.user,
         password: passwordProvider,
-        host: options.postgres.host,
-        port: options.postgres.port,
-        database: options.postgres.database,
-        maxLifetimeSeconds: 60 * 10, // This should be set to less than the RDS Token lifespan (15 minutes)
-        ...(server.secureContext && {
-          ssl: {
-            rejectUnauthorized: false,
-            secureContext: server.secureContext
-          }
-        })
+        host: value.host,
+        port: value.port,
+        database: value.database,
+        maxLifetimeSeconds: 60 * 12, // must be less than 15 minutes
+        ssl: value.ssl,
+        ...(value.pool ?? {})
+      }
+
+      const pool = new Pool(poolConfig)
+
+      // Test the connection
+      await pool.query('SELECT 1')
+
+      server.decorate('server', 'pg', pool)
+      server.decorate('request', 'pg', pool)
+
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      server.events.on('stop', async () => {
+        await pool.end()
       })
-
-      server.logger.info(
-        `Postgres connected to database '${options.postgres.database}'`
-      )
-
-      server.decorate('server', 'db', pool)
-      server.decorate('request', 'db', pool)
     }
-  },
-  options: {
-    postgres: config.get('postgres'),
-    region: config.get('awsRegion')
   }
 }
 
-//
-// /**
-//  * To be mixed in with Request|Server to provide the db decorator
-//  * @typedef {{db: import('~/src/api/common/helpers/postgres.js').postgres }}
-//  */
+const optionsSchema = Joi.object({
+  user: Joi.string().required().description('postgres username'),
+  host: Joi.string().required().description('hostname of the RDS instance'),
+  port: Joi.number().required().description('port of the RDS instance'),
+  database: Joi.string().required().description('database to connect to'),
+  useIAM: Joi.boolean()
+    .required()
+    .description('Authenticate with the database using IAM credentials'),
+  localPassword: Joi.string()
+    .min(0)
+    .empty(true)
+    .optional()
+    .description('Static password used when useIAM is set to false'),
+
+  region: Joi.string().required().description('AWS region'),
+  ssl: Joi.boolean().optional(),
+  pool: Joi.object({
+    connectionTimeoutMillis: Joi.number().optional(),
+    idleTimeoutMillis: Joi.number().optional(),
+    max: Joi.number().optional(),
+    min: Joi.number().optional(),
+    allowExitOnIdle: Joi.boolean().optional()
+  })
+    .optional()
+    .unknown(true)
+    .description('override postgres pool settings')
+})

@@ -2,6 +2,12 @@ name: Publish DB Schema
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Changeset version'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   id-token: write
@@ -13,7 +19,6 @@ env:
 
 jobs:
   build:
-    if: github.run_number != 1
     name: CDP-build-workflow
     runs-on: ubuntu-latest
     steps:
@@ -25,5 +30,6 @@ jobs:
         with:
           path: ./changelog
           force: "true"
+          version: ${{ inputs.version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
