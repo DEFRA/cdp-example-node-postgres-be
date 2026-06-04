@@ -51,7 +51,7 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./db/migration:/liquibase/changelog
+      - ./changelog:/liquibase/changelog
     command: --url=jdbc:postgresql://postgres:5432/cdp_example_node_postgres_be --username=postgres --password=postgres --changelog-file=changelog/db.changelog.xml update
     networks:
       - cdp-tenant
